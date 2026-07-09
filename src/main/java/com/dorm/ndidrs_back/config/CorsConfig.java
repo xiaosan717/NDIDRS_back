@@ -14,7 +14,7 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         // 只允许你的Netlify前端域名跨域
-        config.setAllowedOrigins(Arrays.asList("https://ndidrs.netlify.app"));
+        config.setAllowedOrigins(Arrays.asList("https://ndidrs.netlify.app", "http://120.26.174.129", "http://localhost:5173"));
         config.setAllowCredentials(true);
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");

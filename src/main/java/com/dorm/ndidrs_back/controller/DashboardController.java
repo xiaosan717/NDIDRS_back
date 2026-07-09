@@ -299,7 +299,8 @@ public class DashboardController {
     public Result<List<Map<String, Object>>> getRecentRecords() {
         ScopeFilter filter = getScopeFilter();
         LambdaQueryWrapper<DormCheckRecord> wrapper = applyCheckRecordFilter(filter);
-        wrapper.orderByDesc(DormCheckRecord::getCreateTime)
+        wrapper.orderByDesc(DormCheckRecord::getCheckDate)
+                .orderByDesc(DormCheckRecord::getCreateTime)
                 .last("LIMIT 5");
         List<DormCheckRecord> records = checkRecordService.list(wrapper);
         
