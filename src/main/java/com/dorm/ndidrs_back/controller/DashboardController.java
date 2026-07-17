@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -305,17 +306,15 @@ public class DashboardController {
         List<DormCheckRecord> records = checkRecordService.list(wrapper);
         
         List<Map<String, Object>> result = records.stream().map(record -> {
-            Map<String, Object> map = new HashMap<>();
+            Map<String, Object> map = new LinkedHashMap<>();
             map.put("id", record.getId());
-            map.put("checkDate", record.getCheckDate());
-            map.put("status", record.getStatus());
-            map.put("remark", record.getRemark());
-            
-            SysUser student = userService.getById(record.getStudentId());
-            map.put("studentName", student != null ? student.getRealName() : "未知");
-            
             DormRoom room = roomService.getById(record.getRoomId());
             map.put("roomNumber", room != null ? room.getRoomNumber() : "未知");
+            SysUser student = userService.getById(record.getStudentId());
+            map.put("studentName", student != null ? student.getRealName() : "未知");
+            map.put("status", record.getStatus());
+            map.put("remark", record.getRemark());
+            map.put("checkDate", record.getCheckDate());
             
             return map;
         }).toList();
