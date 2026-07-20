@@ -1,0 +1,49 @@
+server:
+    address: 0.0.0.0
+    port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/dorm_check_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: YOUR_DB_PASSWORD
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+  mail:
+    # 使用QQ邮箱发送验证码
+    host: smtp.qq.com
+    port: 465
+    username: YOUR_QQ_EMAIL
+    password: YOUR_QQ_SMTP_PASSWORD
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            port: 465
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+
+jwt:
+  secret: dorm-check-system-jwt-secret-key-2024
+  expiration: 86400000
+
+logging:
+  level:
+    com.dorm.ndidrs_back: debug
