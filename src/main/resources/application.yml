@@ -3,9 +3,14 @@ server:
     port: 8080
 
 spring:
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: false
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/dorm_check_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
-    username: root
+    username: dorm_check_db
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   servlet:
@@ -39,6 +44,10 @@ mybatis-plus:
 jwt:
   secret: dorm-check-system-jwt-secret-key-2024
   expiration: 86400000
+
+trtc:
+  sdk-app-id: 1600151119
+  sdk-secret-key: d914f4d312d931809f4ad4e82184f9e3028d0fc05d8dcceb989fa26ad39cc272
 
 logging:
   level:

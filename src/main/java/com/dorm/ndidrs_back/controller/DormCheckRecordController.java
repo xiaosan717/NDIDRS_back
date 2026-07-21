@@ -140,14 +140,21 @@ public class DormCheckRecordController {
     }
 
     @PostMapping("/batch")
-    public Result<Void> batchAdd(@RequestBody List<DormCheckRecord> records) {
+    public Result<Void> batchAdd(@RequestBody Map<String, Object> data) {
+        List<Map<String, Object>> recordList = (List<Map<String, Object>>) data.get("records");
         LocalDate today = LocalDate.now();
-        records.forEach(r -> {
+        
+        List<DormCheckRecord> records = recordList.stream().map(item -> {
+            DormCheckRecord r = new DormCheckRecord();
+            r.setRoomId(((Number) item.get("roomId")).longValue());
+            r.setStudentId(((Number) item.get("studentId")).longValue());
+            r.setStatus((String) item.get("status"));
+            r.setRemark((String) item.get("remark"));
             r.setSubmitTime(LocalDateTime.now());
             r.setCheckDate(today);
-        });
+            return r;
+        }).toList();
         
-        // 已存在则更新，不存在则插入
         for (DormCheckRecord r : records) {
             DormCheckRecord existing = dormCheckRecordService.getOne(
                 new LambdaQueryWrapper<DormCheckRecord>()
@@ -205,6 +212,13 @@ public class DormCheckRecordController {
 
         List<Map<String, Object>> uncheckedRooms = allRooms.stream()
                 .filter(room -> !checkedRoomIds.contains(room.getId()))
+                .filter(room -> {
+                    long studentCount = userService.count(new LambdaQueryWrapper<SysUser>()
+                            .eq(SysUser::getBuilding, room.getBuilding())
+                            .eq(SysUser::getRoom, room.getRoomNumber())
+                            .eq(SysUser::getStatus, 1));
+                    return studentCount > 0;
+                })
                 .map(room -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("id", room.getId());
