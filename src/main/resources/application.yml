@@ -1,6 +1,7 @@
 server:
     address: 0.0.0.0
-    port: 8080
+    port: ${SERVER_PORT:8080}
+    forward-headers-strategy: framework
 
 spring:
   jackson:
@@ -9,20 +10,19 @@ spring:
     serialization:
       write-dates-as-timestamps: false
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/dorm_check_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
-    username: dorm_check_db
-    password: 123456
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/dorm_check_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
+    username: ${DB_USERNAME:dorm_check_db}
+    password: ${DB_PASSWORD:123456}
     driver-class-name: com.mysql.cj.jdbc.Driver
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 50MB
   mail:
-    # 使用QQ邮箱发送验证码
-    host: smtp.qq.com
-    port: 465
-    username: 3031114349@qq.com
-    password: pqvcrhdulgoydgii
+    host: ${MAIL_HOST:smtp.qq.com}
+    port: ${MAIL_PORT:465}
+    username: ${MAIL_USERNAME:3031114349@qq.com}
+    password: ${MAIL_PASSWORD:pqvcrhdulgoydgii}
     properties:
       mail:
         smtp:
@@ -42,13 +42,25 @@ mybatis-plus:
       id-type: auto
 
 jwt:
-  secret: dorm-check-system-jwt-secret-key-2024
-  expiration: 86400000
+  secret: ${JWT_SECRET:dorm-check-system-jwt-secret-key-2024}
+  expiration: ${JWT_EXPIRATION:86400000}
 
 trtc:
-  sdk-app-id: 1600151119
-  sdk-secret-key: d914f4d312d931809f4ad4e82184f9e3028d0fc05d8dcceb989fa26ad39cc272
+  sdk-app-id: ${TRTC_SDK_APP_ID:1600151119}
+  sdk-secret-key: ${TRTC_SDK_SECRET_KEY:d914f4d312d931809f4ad4e82184f9e3028d0fc05d8dcceb989fa26ad39cc272}
+
+ai:
+  enabled: ${AI_ENABLED:true}
+  base-url: ${AI_BASE_URL:https://api.deepseek.com}
+  api-key: ${AI_API_KEY:sk-bf5f41d6bf5c47c78386d85969501328}
+  model: ${AI_MODEL:deepseek-v4-flash}
+  connect-timeout-seconds: ${AI_CONNECT_TIMEOUT_SECONDS:10}
+  read-timeout-seconds: ${AI_READ_TIMEOUT_SECONDS:60}
+
+app:
+  cors:
+    allowed-origins: ${APP_ALLOWED_ORIGINS:http://localhost:5173,http://120.26.174.129,https://120.26.174.129,http://api.ndidrs.com,https://api.ndidrs.com,https://ndidrs.netlify.app}
 
 logging:
   level:
-    com.dorm.ndidrs_back: debug
+    com.dorm.ndidrs_back: ${APP_LOG_LEVEL:debug}

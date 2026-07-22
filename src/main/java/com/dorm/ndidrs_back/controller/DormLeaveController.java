@@ -9,16 +9,30 @@ import com.dorm.ndidrs_back.entity.SysUser;
 import com.dorm.ndidrs_back.service.DormLeaveService;
 import com.dorm.ndidrs_back.service.SysUserService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/leaves")
 public class DormLeaveController {
+    private static final long MAX_PROOF_IMAGE_BYTES = 5L * 1024 * 1024;
+    private static final Path PROOF_IMAGE_DIRECTORY = Path.of(
+            System.getProperty("user.dir"), "uploads", "leaves").toAbsolutePath().normalize();
+
     private final DormLeaveService dormLeaveService;
     private final SysUserService userService;
     private final JwtUtils jwtUtils;
@@ -94,9 +108,36 @@ public class DormLeaveController {
 
     @PostMapping
     public Result<Void> add(@RequestBody DormLeave leave) {
+        String storedImage = null;
+        if (leave.getProofImage() != null && leave.getProofImage().startsWith("data:image/")) {
+            storedImage = storeProofImage(leave.getProofImage());
+            leave.setProofImage(storedImage);
+        }
         leave.setStatus("PENDING");
-        dormLeaveService.save(leave);
+        try {
+            if (!dormLeaveService.save(leave)) {
+                throw new IllegalStateException("保存请假申请失败");
+            }
+        } catch (RuntimeException e) {
+            deleteStoredImage(storedImage);
+            throw e;
+        }
         return Result.success("申请提交成功", null);
+    }
+
+    @GetMapping("/proof/{filename:.+}")
+    public ResponseEntity<Resource> proofImage(@PathVariable String filename) throws IOException {
+        if (!filename.matches("[A-Za-z0-9._-]+")) {
+            return ResponseEntity.badRequest().build();
+        }
+        Path imagePath = PROOF_IMAGE_DIRECTORY.resolve(filename).normalize();
+        if (!imagePath.startsWith(PROOF_IMAGE_DIRECTORY) || !Files.isRegularFile(imagePath)) {
+            return ResponseEntity.notFound().build();
+        }
+        String contentType = Files.probeContentType(imagePath);
+        MediaType mediaType = contentType == null
+                ? MediaType.APPLICATION_OCTET_STREAM : MediaType.parseMediaType(contentType);
+        return ResponseEntity.ok().contentType(mediaType).body(new FileSystemResource(imagePath));
     }
 
     @PutMapping("/approve/{id}")
@@ -119,7 +160,7 @@ public class DormLeaveController {
             if (!"PENDING".equals(leave.getStatus())) {
                 return Result.error(400, "只能审批待辅导员审批的请假");
             }
-            if ("APPROVED".equals(newStatus)) {
+            if ("APPROVED".equals(newStatus) || "COUNSELOR_APPROVED".equals(newStatus)) {
                 leave.setStatus("COUNSELOR_APPROVED");
             } else {
                 leave.setStatus("REJECTED");
@@ -173,6 +214,7 @@ public class DormLeaveController {
             map.put("startTime", leave.getStartTime());
             map.put("endTime", leave.getEndTime());
             map.put("status", leave.getStatus());
+            map.put("proofImage", leave.getProofImage());
             
             SysUser student = userService.getById(leave.getStudentId());
             map.put("studentName", student != null ? student.getRealName() : "未知");
@@ -181,5 +223,50 @@ public class DormLeaveController {
         }).toList();
         
         return Result.success(result);
+    }
+
+    private String storeProofImage(String dataUrl) {
+        int separator = dataUrl.indexOf(',');
+        if (separator <= 0) {
+            throw new IllegalArgumentException("凭证照片格式不正确");
+        }
+
+        String metadata = dataUrl.substring(0, separator).toLowerCase();
+        String extension;
+        if (metadata.startsWith("data:image/png;")) extension = ".png";
+        else if (metadata.startsWith("data:image/jpeg;") || metadata.startsWith("data:image/jpg;")) extension = ".jpg";
+        else if (metadata.startsWith("data:image/gif;")) extension = ".gif";
+        else if (metadata.startsWith("data:image/webp;")) extension = ".webp";
+        else throw new IllegalArgumentException("凭证照片仅支持 PNG、JPG、GIF 或 WEBP 格式");
+
+        byte[] bytes;
+        try {
+            bytes = Base64.getDecoder().decode(dataUrl.substring(separator + 1));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("凭证照片内容无法解析");
+        }
+        if (bytes.length == 0 || bytes.length > MAX_PROOF_IMAGE_BYTES) {
+            throw new IllegalArgumentException("凭证照片大小必须在 5MB 以内");
+        }
+
+        String filename = UUID.randomUUID().toString().replace("-", "") + extension;
+        Path imagePath = PROOF_IMAGE_DIRECTORY.resolve(filename).normalize();
+        try {
+            Files.createDirectories(PROOF_IMAGE_DIRECTORY);
+            Files.write(imagePath, bytes, StandardOpenOption.CREATE_NEW);
+        } catch (IOException e) {
+            throw new IllegalStateException("保存凭证照片失败", e);
+        }
+        return "/api/leaves/proof/" + filename;
+    }
+
+    private void deleteStoredImage(String storedImage) {
+        if (storedImage == null || !storedImage.startsWith("/api/leaves/proof/")) return;
+        String filename = storedImage.substring(storedImage.lastIndexOf('/') + 1);
+        try {
+            Files.deleteIfExists(PROOF_IMAGE_DIRECTORY.resolve(filename).normalize());
+        } catch (IOException ignored) {
+            // The database error is the primary failure; orphan cleanup can be retried later.
+        }
     }
 }

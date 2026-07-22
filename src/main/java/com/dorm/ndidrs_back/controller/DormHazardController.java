@@ -226,15 +226,16 @@ public class DormHazardController {
             map.put("roomId", hazard.getRoomId());
             map.put("hazardType", hazard.getHazardType());
             map.put("description", hazard.getDescription());
+            map.put("image", hazard.getImage());
             map.put("status", hazard.getStatus());
-            
+
             SysUser student = userService.getById(hazard.getStudentId());
             map.put("studentName", student != null ? student.getRealName() : "未知");
-            
+
             DormRoom room = roomService.getById(hazard.getRoomId());
             map.put("roomNumber", room != null ? room.getRoomNumber() : "未知");
             map.put("building", room != null ? room.getBuilding() : "未知");
-            
+
             return map;
         }).toList();
         

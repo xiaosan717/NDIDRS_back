@@ -108,6 +108,7 @@ public class DormCheckRecordController {
             map.put("checkDate", record.getCheckDate());
             map.put("status", record.getStatus());
             map.put("remark", record.getRemark());
+            map.put("image", record.getImage());
             map.put("submitTime", record.getSubmitTime());
             map.put("isModified", record.getIsModified());
             map.put("modifyRemark", record.getModifyRemark());
