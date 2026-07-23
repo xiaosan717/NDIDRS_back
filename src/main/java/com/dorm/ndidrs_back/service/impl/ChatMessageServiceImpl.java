@@ -14,7 +14,7 @@ import java.util.List;
 public class ChatMessageServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage> implements ChatMessageService {
 
     @Override
-    public List<ChatMessage> getHistory(Long roomId, Long beforeId, int limit) {
+    public List<ChatMessage> getHistory(String roomId, Long beforeId, int limit) {
         LambdaQueryWrapper<ChatMessage> wrapper = new LambdaQueryWrapper<ChatMessage>()
                 .eq(ChatMessage::getRoomId, roomId)
                 .orderByDesc(ChatMessage::getId)
@@ -28,7 +28,7 @@ public class ChatMessageServiceImpl extends ServiceImpl<ChatMessageMapper, ChatM
     }
 
     @Override
-    public ChatMessage saveMessage(Long roomId, Long senderId, String senderName, String senderAvatar, String msgType, String content) {
+    public ChatMessage saveMessage(String roomId, Long senderId, String senderName, String senderAvatar, String msgType, String content) {
         ChatMessage msg = new ChatMessage();
         msg.setRoomId(roomId);
         msg.setSenderId(senderId);

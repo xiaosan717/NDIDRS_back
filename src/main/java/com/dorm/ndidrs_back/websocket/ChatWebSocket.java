@@ -137,7 +137,7 @@ public class ChatWebSocket {
 
             // 持久化到数据库
             ChatMessage saved = chatMessageServiceStatic.saveMessage(
-                    parseRoomId(roomId), userId, realName, avatar, msgType, content);
+                    roomId, userId, realName, avatar, msgType, content);
 
             // 构造广播消息
             ObjectNode response = objectMapper.createObjectNode();
@@ -222,14 +222,6 @@ public class ChatWebSocket {
             return null;
         } catch (Exception e) {
             return null;
-        }
-    }
-
-    private Long parseRoomId(String roomIdStr) {
-        try {
-            return Long.parseLong(roomIdStr);
-        } catch (NumberFormatException e) {
-            return 0L;
         }
     }
 

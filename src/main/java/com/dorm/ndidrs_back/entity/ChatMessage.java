@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class ChatMessage {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private Long roomId;
+    private String roomId;
     private Long senderId;
     private String senderName;
     private String senderAvatar;
@@ -22,8 +22,8 @@ public class ChatMessage {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public Long getRoomId() { return roomId; }
-    public void setRoomId(Long roomId) { this.roomId = roomId; }
+    public String getRoomId() { return roomId; }
+    public void setRoomId(String roomId) { this.roomId = roomId; }
     public Long getSenderId() { return senderId; }
     public void setSenderId(Long senderId) { this.senderId = senderId; }
     public String getSenderName() { return senderName; }

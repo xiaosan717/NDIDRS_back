@@ -109,7 +109,7 @@ public class ChatController {
      * 获取聊天历史消息
      */
     @GetMapping("/{roomId}/messages")
-    public Result<List<ChatMessage>> getMessages(@PathVariable Long roomId,
+    public Result<List<ChatMessage>> getMessages(@PathVariable String roomId,
                                                   @RequestParam(required = false) Long beforeId,
                                                   @RequestParam(defaultValue = "50") int limit,
                                                   HttpServletRequest request) {
@@ -125,7 +125,7 @@ public class ChatController {
      * 发送文本消息（REST方式，WebSocket也可发送）
      */
     @PostMapping("/{roomId}/send")
-    public Result<ChatMessage> sendMessage(@PathVariable Long roomId,
+    public Result<ChatMessage> sendMessage(@PathVariable String roomId,
                                             @RequestBody Map<String, String> body,
                                             HttpServletRequest request) {
         Long userId = jwtUtils.getCurrentUserId(request);

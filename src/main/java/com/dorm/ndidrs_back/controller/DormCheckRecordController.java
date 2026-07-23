@@ -143,6 +143,7 @@ public class DormCheckRecordController {
     @PostMapping("/batch")
     public Result<Void> batchAdd(@RequestBody Map<String, Object> data) {
         List<Map<String, Object>> recordList = (List<Map<String, Object>>) data.get("records");
+        String image = (String) data.get("image");
         LocalDate today = LocalDate.now();
         
         List<DormCheckRecord> records = recordList.stream().map(item -> {
@@ -151,6 +152,8 @@ public class DormCheckRecordController {
             r.setStudentId(((Number) item.get("studentId")).longValue());
             r.setStatus((String) item.get("status"));
             r.setRemark((String) item.get("remark"));
+            r.setSubmitterId(item.get("submitterId") != null ? ((Number) item.get("submitterId")).longValue() : null);
+            r.setImage(image);
             r.setSubmitTime(LocalDateTime.now());
             r.setCheckDate(today);
             return r;
