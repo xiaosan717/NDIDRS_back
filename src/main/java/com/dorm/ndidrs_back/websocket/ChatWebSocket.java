@@ -149,7 +149,7 @@ public class ChatWebSocket {
             response.put("id", saved.getId());
             response.put("time", saved.getCreateTime().format(timeFormatter));
 
-            broadcast(roomId, objectMapper.writeValueAsString(response));
+            broadcastExceptSelf(roomId, objectMapper.writeValueAsString(response), this.session);
         } catch (Exception e) {
             System.err.println("处理聊天消息失败: " + e.getMessage());
         }
@@ -187,6 +187,24 @@ public class ChatWebSocket {
             for (SessionInfo info : sessions) {
                 try {
                     if (info.session.isOpen()) {
+                        info.session.getBasicRemote().sendText(message);
+                    }
+                } catch (IOException e) {
+                    System.err.println("发送消息失败: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    /**
+     * 广播消息给房间内所有人，但排除发送者自己（防止消息回显）
+     */
+    private void broadcastExceptSelf(String roomId, String message, Session senderSession) {
+        CopyOnWriteArraySet<SessionInfo> sessions = roomSessions.get(roomId);
+        if (sessions != null) {
+            for (SessionInfo info : sessions) {
+                try {
+                    if (info.session.isOpen() && info.session != senderSession) {
                         info.session.getBasicRemote().sendText(message);
                     }
                 } catch (IOException e) {
