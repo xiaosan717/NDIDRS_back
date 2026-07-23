@@ -108,6 +108,18 @@ CREATE TABLE IF NOT EXISTS dorm_hazard (
     update_time DATETIME
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS chat_message (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    room_id BIGINT NOT NULL COMMENT '宿舍ID',
+    sender_id BIGINT NOT NULL COMMENT '发送者ID',
+    sender_name VARCHAR(64) COMMENT '发送者姓名',
+    sender_avatar VARCHAR(255) COMMENT '发送者头像',
+    msg_type VARCHAR(16) NOT NULL DEFAULT 'TEXT' COMMENT '消息类型: TEXT/IMAGE/VIDEO/EMOJI',
+    content MEDIUMTEXT COMMENT '消息内容(文本/HTML/URL)',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_room_time (room_id, create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='宿舍聊天消息';
+
 -- ===================== 测试数据 =====================
 
 -- 学院

@@ -16,7 +16,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   servlet:
     multipart:
-      max-file-size: 10MB
+      max-file-size: 25MB
       max-request-size: 50MB
   mail:
     host: ${MAIL_HOST:smtp.qq.com}
@@ -58,6 +58,7 @@ ai:
   read-timeout-seconds: ${AI_READ_TIMEOUT_SECONDS:60}
 
 app:
+  upload-dir: ${APP_UPLOAD_DIR:/www/wwwroot/uploads/chat}
   cors:
     allowed-origins: ${APP_ALLOWED_ORIGINS:http://localhost:5173,http://120.26.174.129,https://120.26.174.129,http://api.ndidrs.com,https://api.ndidrs.com,https://ndidrs.netlify.app}
 

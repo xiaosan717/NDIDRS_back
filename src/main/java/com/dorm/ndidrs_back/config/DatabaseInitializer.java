@@ -22,10 +22,34 @@ public class DatabaseInitializer {
             migrateDormHazardImage(conn);
             migrateDormCheckRecordImage(conn);
             migrateDormLeaveProofImage(conn);
+            createChatMessageTable(conn);
             System.out.println("Database migration completed successfully");
         } catch (SQLException e) {
             System.err.println("Database migration failed: " + e.getMessage());
         }
+    }
+
+    private void createChatMessageTable(Connection conn) throws SQLException {
+        if (!tableExists(conn, "chat_message")) {
+            executeSQL(conn, "CREATE TABLE chat_message ("
+                    + "id BIGINT PRIMARY KEY AUTO_INCREMENT, "
+                    + "room_id BIGINT NOT NULL COMMENT '宿舍ID', "
+                    + "sender_id BIGINT NOT NULL COMMENT '发送者ID', "
+                    + "sender_name VARCHAR(64) COMMENT '发送者姓名', "
+                    + "sender_avatar VARCHAR(255) COMMENT '发送者头像', "
+                    + "msg_type VARCHAR(16) NOT NULL DEFAULT 'TEXT' COMMENT '消息类型', "
+                    + "content MEDIUMTEXT COMMENT '消息内容', "
+                    + "create_time DATETIME DEFAULT CURRENT_TIMESTAMP, "
+                    + "INDEX idx_room_time (room_id, create_time)"
+                    + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='宿舍聊天消息'");
+            System.out.println("created chat_message table");
+        }
+    }
+
+    private boolean tableExists(Connection conn, String tableName) throws SQLException {
+        DatabaseMetaData metaData = conn.getMetaData();
+        java.sql.ResultSet rs = metaData.getTables(null, null, tableName, null);
+        return rs.next();
     }
 
     private void migrateDormHazardImage(Connection conn) throws SQLException {

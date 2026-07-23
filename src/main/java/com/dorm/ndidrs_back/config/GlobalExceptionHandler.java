@@ -21,6 +21,6 @@ public class GlobalExceptionHandler {
     public Result<Void> handleException(Exception e) {
         String errorId = UUID.randomUUID().toString().substring(0, 8);
         log.error("Unhandled request error, errorId={}", errorId, e);
-        return Result.error(500, "服务器内部错误，请稍后重试（错误编号：" + errorId + "）");
+        return Result.error(500, "[DEBUG-" + errorId + "] " + e.getClass().getSimpleName() + ": " + e.getMessage());
     }
 }
